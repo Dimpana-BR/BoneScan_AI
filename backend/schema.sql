@@ -1,0 +1,73 @@
+-- BoneScan AI Relational Schema (PostgreSQL)
+
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(120) UNIQUE NOT NULL,
+    hashed_password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS patients (
+    id SERIAL PRIMARY KEY,
+    patient_uid VARCHAR(30) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    age INTEGER NOT NULL,
+    gender VARCHAR(10) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    blood_group VARCHAR(5) NOT NULL,
+    address TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS appointments (
+    id SERIAL PRIMARY KEY,
+    patient_id INTEGER REFERENCES patients(id) ON DELETE CASCADE,
+    doctor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    appointment_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    status VARCHAR(20) DEFAULT 'SCHEDULED',
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS biomarker_reports (
+    id SERIAL PRIMARY KEY,
+    patient_id INTEGER REFERENCES patients(id) ON DELETE CASCADE,
+    alp DOUBLE PRECISION NOT NULL,
+    opn DOUBLE PRECISION NOT NULL,
+    vitamin_d DOUBLE PRECISION NOT NULL,
+    pain_level VARCHAR(20) DEFAULT 'LOW',
+    biomarker_risk_score INTEGER,
+    biomarker_prediction VARCHAR(50),
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS xray_predictions (
+    id SERIAL PRIMARY KEY,
+    patient_id INTEGER REFERENCES patients(id) ON DELETE CASCADE,
+    image_path VARCHAR(255) NOT NULL,
+    gradcam_path VARCHAR(255),
+    cnn_prediction VARCHAR(50),
+    confidence_score DOUBLE PRECISION,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS combined_predictions (
+    id SERIAL PRIMARY KEY,
+    patient_id INTEGER REFERENCES patients(id) ON DELETE CASCADE,
+    fused_score DOUBLE PRECISION NOT NULL,
+    risk_level VARCHAR(20) NOT NULL,
+    final_diagnosis TEXT NOT NULL,
+    ai_recommendation TEXT NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS doctor_notes (
+    id SERIAL PRIMARY KEY,
+    patient_id INTEGER REFERENCES patients(id) ON DELETE CASCADE,
+    doctor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    clinical_notes TEXT NOT NULL,
+    recommendation TEXT NOT NULL,
+    follow_up_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
